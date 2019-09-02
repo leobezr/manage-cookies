@@ -8,9 +8,15 @@ function init(){
     const $input = document.querySelector('#input');
     const $btn = document.querySelector('#btn');
 
-    $btn.onclick = cookies.generate('myName', 5);
+    $btn.addEventListener('click', e => {
+        e.preventDefault();
+        cookies.generate('myName', 5);
+
+        const cookie = cookies.read('myName');
+        console.log(cookie);
+    })
     $input.addEventListener('input', e => {
         self = e.target;
-        cookies.handleData('myName', self.value)
+        cookies.handleData('myName', self.value);
     })
 }

@@ -1,6 +1,7 @@
 class CookieManager {
-    constructor(){
+    constructor() {
         this.scope = {}
+        this.clean();
     }
 
     // !-- Reads and Parse
@@ -32,19 +33,13 @@ class CookieManager {
                     }
                 }, {})
 
-            const data = []
-            for ( let i in cookie ){
-                data.push(cookie[i])
-            }
-            return (
-                data,
-                cookie.sortByName
-            )
+            return this.scope[sortByName]
+            
         }
     }
 
     // !-- Generates cookie
-    create = function(name, value, days) {
+    create = function (value, days) {
         if (days) {
             var date = new Date();
             date.setTime(date.getTime() + (days * 24 * 60 * 1000));
@@ -52,21 +47,44 @@ class CookieManager {
         } else {
             var expires = "";
         }
-        document.cookie = name + "=" + value + expires + "; path=/";
+
+        for(let i = 0; i < Object.keys(this.scope).length; i++){
+            if ( Object.values(this.scope)[i] == this.scope[value] ){
+                document.cookie = Object.keys(this.scope)[i] + "=" + this.scope[value] + expires + "; path=/";
+            }
+        }
+
+        this.read('myName');
     }
 
     // !-- This is the event listener
-    handleData = function(name, reader){debugger
+    handleData = function (name, reader) {
         this.value = reader;
-        this.scope += {name: this.value};
+        this.scope[name] = this.value;
     }
 
-    generate = function(name, value, timestamp){
-        createCookie(name, value, timestamp)
-        const cookieJSON = cookieRead()
-        console.log(cookieJSON)
+    // !-- Calls Create Cookie
+    generate = function (name, timestamp) {
+        for (let i = 0; i < Object.keys(this.scope).length; i++ ) {
+            if (Object.keys(this.scope)[i] === name) {
+                this.create( Object.keys(this.scope)[i], timestamp )
+            }
+        }
+        const cookieJSON = this.read();
         return (
             cookieJSON
         )
+    }
+
+    // !-- Cleans all cookies
+    clean = function () {
+        var cookies = document.cookie.split(";");
+
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            var eqPos = cookie.indexOf("=");
+            var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        }
     }
 }
